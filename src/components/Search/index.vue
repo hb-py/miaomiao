@@ -3,28 +3,19 @@
         <div class="search_input">
             <div class="search_input_wrapper">
                 <i class="iconfont icon-sousuo"></i>
-                <input type="text">
+                <input type="text" v-model="message">
             </div>
         </div>
         <div class="search_result">
-            <h3>电影/电视剧/综艺</h3>
+            <h3>电影/影院</h3>
             <ul>
-                <li>
-                    <div class="img"><img src="/images/movie_1.jpg"></div>
+                <li v-for="item in cinemaslist" :key="item.cinemaId">
+                    <!-- <div class="img"><img :src="item.logoUrl"></div> -->
                     <div class="info">
-                        <p><span>无名之辈</span><span>8.5</span></p>
-                        <p>A Cool Fish</p>
-                        <p>剧情,喜剧,犯罪</p>
-                        <p>2018-11-16</p>
-                    </div>
-                </li>
-                <li>
-                    <div class="img"><img src="/images/movie_1.jpg"></div>
-                    <div class="info">
-                        <p><span>无名之辈</span><span>8.5</span></p>
-                        <p>A Cool Fish</p>
-                        <p>剧情,喜剧,犯罪</p>
-                        <p>2018-11-16</p>
+                        <p><span>{{item.name}}</span><span>8.5</span></p>
+                        <p>{{item.address}}</p>
+                        <!-- <p>剧情,喜剧,犯罪</p>
+                        <p>2018-11-16</p> -->
                     </div>
                 </li>
             </ul>
@@ -33,8 +24,54 @@
 </template>
 
 <script>
+import axios from 'axios'
 export default {
+  data () {
+    return {
+      message: '',
+      cinemaslist: []
+    }
+  },
+  methods: {
+    cancelRequest () {
+      if (typeof this.source === 'function') {
+        this.source('终止请求')
+      }
+    }
+  },
+  watch: {
+    message (newval) {
+      var that = this
+      this.cancelRequest()
 
+      axios({
+        url: 'https://m.maizuo.com/gateway?cityId=110100&ticketFlag=0&k=574330',
+        headers: {
+          'X-Client-Info': '{"a":"3000","ch":"1002","v":"5.0.4","e":"1594901884791893185134594","bc":"110100"}',
+          'X-Host': 'mall.film-ticket.cinema.list'
+        },
+        cancelToken: new this.axios.CancelToken(function (c) {
+          that.source = c
+        })
+      }).then((res) => {
+        var msg = res.data.msg
+        var cinemas = res.data.data.cinemas
+        if (msg && cinemas) {
+          this.cinemaslist = res.data.data.cinemas
+        }
+      }).catch((err) => {
+        if (this.axios.isCancel(err)) {
+          console.log('Rquest canceled', err.message) // 请求如果被取消，这里是返回取消的message
+        } else {
+          // handle error
+          console.log(err)
+        }
+      })
+    }
+  },
+  mounted () {
+
+  }
 }
 </script>
 
