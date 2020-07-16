@@ -1,17 +1,10 @@
 <template>
     <div class="city_body">
-        <div class="city_list">
+        <!-- <div class="city_list">
             <div class="city_hot">
                 <h2>热门城市</h2>
                 <ul class="clearfix">
                     <li>上海</li>
-                    <li>北京</li>
-                    <li>上海</li>
-                    <li>北京</li>
-                    <li>上海</li>
-                    <li>北京</li>
-                    <li>上海</li>
-                    <li>北京</li>
                 </ul>
             </div>
             <div class="city_sort">
@@ -79,13 +72,110 @@
                 <li>D</li>
                 <li>E</li>
             </ul>
+        </div> -->
+        <div class="city_list">
+            <div class="city_hot">
+                <h2>热门城市</h2>
+                <ul class="clearfix">
+                    <li v-for="item in hotlist" :key="item.cityId">{{item.name}}</li>
+                </ul>
+            </div>
+            <div class="city_sort" ref="city_sort">
+                <div v-for="item in citylist" :key="item.index">
+                    <h2>{{item.index}}</h2>
+                    <ul>
+                        <li v-for="itemlist in item.list" :key="itemlist.cityId" >{{itemlist.name}}</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="city_index">
+            <ul>
+                <li v-for="(item,index) in citylist" :key="item.index" @touchstart="handleToIndex(index)">{{item.index}}</li>
+            </ul>
         </div>
     </div>
 </template>
 
 <script>
+import axios from 'axios'
 export default {
+  data () {
+    return {
+      citylist: [],
+      hotlist: []
+    }
+  },
+  mounted () {
+    axios({
+      url: 'https://m.maizuo.com/gateway?k=7548260',
+      headers: {
+        'X-Client-Info': '{"a":"3000","ch":"1002","v":"5.0.4","e":"1594717659755175509721090","bc":"110100"}',
+        'X-Host': 'mall.film-ticket.city.list'
+      }
+    }).then((res) => {
+      var msg = res.data.msg
+      if (msg === 'ok') {
+        var cities = res.data.data.cities
+        var { citylist, hotlist } = this.formatCityList(cities)
+        this.citylist = citylist
+        this.hotlist = hotlist
+      }
+    })
+  },
+  methods: {
+    formatCityList (cities) {
+      var citylist = []
+      var hotlist = []
 
+      for (var i = 0; i < cities.length; i++) {
+        if (cities[i].isHot === 1) {
+          hotlist.push(cities[i])
+        }
+      }
+
+      // eslint-disable-next-line no-redeclare
+      for (var i = 0; i < cities.length; i++) {
+        var firstletter = cities[i].pinyin.substring(0, 1).toUpperCase()
+        if (tocom(firstletter)) {
+          citylist.push({ index: firstletter, list: [{ name: cities[i].name, cityId: cities[i].cityId }] })
+        } else {
+          for (var j = 0; j < citylist.length; j++) {
+            if (citylist[j].index === firstletter) {
+              citylist[j].list.push({ name: cities[i].name, cityId: cities[i].cityId })
+            }
+          }
+        }
+      }
+
+      citylist.sort((n1, n2) => {
+        if (n1.index > n2.index) {
+          return 1
+        } else if (n1.index < n2.index) {
+          return -1
+        } else {
+          return 0
+        }
+      })
+
+      function tocom (firstletter) {
+        for (var i = 0; i < citylist.length; i++) {
+          if (citylist[i].index === firstletter) {
+            return false
+          }
+        }
+        return true
+      }
+      return {
+        citylist,
+        hotlist
+      }
+    },
+    handleToIndex (index) {
+      var h2 = this.$refs.city_sort.getElementsByTagName('h2')
+      this.$refs.city_sort.parentNode.scrollTop = h2[index].offsetTop
+    }
+  }
 }
 </script>
 
