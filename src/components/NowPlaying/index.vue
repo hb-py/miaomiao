@@ -1,8 +1,10 @@
 <template>
-    <div class="movie_body">
+    <div class="movie_body" ref="movie_body">
+      <Scroll>
         <ul>
+            <li>{{pullDownMsg}}</li>
             <li v-for="item in movielist" :key="item.filmId">
-                <div class="pic_show"><img :src="item.poster"></div>
+                <div class="pic_show" @tap='handleToDetail'><img :src="item.poster"></div>
                 <div class="info_list">
                     <h2>{{item.name}}</h2>
                     <p>观众评 <span class="grade">{{item.grade}}</span></p>
@@ -14,15 +16,18 @@
                 </div>
             </li>
         </ul>
+      </Scroll>
     </div>
 </template>
 
 <script>
 import axios from 'axios'
+// import BSscroll from 'better-scroll'
 export default {
   data () {
     return {
-      movielist: []
+      movielist: [],
+      pullDownMsg: []
     }
   },
   mounted () {
@@ -37,8 +42,44 @@ export default {
       var msg = res.data.msg
       if (msg === 'ok') {
         this.movielist = res.data.data.films
+        // this.$nextTick(() => {
+        //   var scroll = new BSscroll(this.$refs.movie_body, {
+        //     tap: true,
+        //     probeType: 1
+        //   })
+        //   scroll.on('scroll', (pos) => {
+        //     if (pos.y > 30) {
+        //       this.pullDownMsg = '正在更新'
+        //     }
+        //   })
+        // scroll.on('touchEnd', (pos) => {
+        //   if (pos.y > 30) {
+        //     axios({
+        //       url: 'https://m.maizuo.com/gateway?cityId=110100&pageNum=1&pageSize=10&type=1&k=9257112',
+        //       headers: {
+        //         'X-Client-Info': '{"a":"3000","ch":"1002","v":"5.0.4","e":"1594901884791893185134594","bc":"110100"}',
+        //         'X-Host': 'mall.film-ticket.film.list'
+        //       }
+        //     }).then((res) => {
+        //       var msg = res.data.msg
+        //       if (msg === 'ok') {
+        //         this.pullDownMsg = '正在更新'
+        //         setTimeout(() => {
+        //           this.movielist = res.data.data.films
+        //           this.pullDownMsg = ''
+        //         }, 1000)
+        //       }
+        //     })
+        //   }
+        // })
+        // })
       }
     })
+  },
+  methods: {
+    handleToDetail () {
+      console.log('handleToDetail')
+    }
   }
 }
 </script>

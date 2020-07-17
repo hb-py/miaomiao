@@ -4,8 +4,10 @@ import router from './router'
 import store from './store'
 import axios from 'axios'
 
-Vue.prototype.axios = axios
+import Scroller from '@/components/Scroller'
+Vue.componrent('Scroller', Scroller)
 
+Vue.prototype.axios = axios
 Vue.config.productionTip = false
 
 new Vue({
